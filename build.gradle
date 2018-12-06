@@ -1,0 +1,26 @@
+plugins {
+    id "java"
+}
+
+group "ru.bmstu.iu7"
+version "0.0.1-SNAPSHOT"
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    dl4jVersion = "1.0.0-beta3"
+    slf4jVersion = "1.7.25"
+}
+
+dependencies {
+    compile group: "org.nd4j", name: "nd4j-native-platform", version: "${dl4jVersion}"
+    compile group: "org.deeplearning4j", name: "deeplearning4j-core", version: "${dl4jVersion}"
+    compile group: "org.deeplearning4j", name: "deeplearning4j-nlp", version: "${dl4jVersion}"
+    compile group: "org.slf4j", name: "slf4j-api", version: "${slf4jVersion}"
+    compile group: "org.slf4j", name: "slf4j-simple", version: "${slf4jVersion}"
+}
