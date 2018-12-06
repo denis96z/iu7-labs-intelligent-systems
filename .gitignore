@@ -1,8 +1,8 @@
 ### Gradle ###
-/.gradle/
-/build/
+.gradle
+build
 
 ### IDE ###
-/.idea/
-/out/
+.idea
+out
 *.iml
