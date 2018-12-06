@@ -16,11 +16,9 @@ import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
-import org.nd4j.linalg.learning.config.Nesterovs;
+import org.nd4j.linalg.learning.config.Adam;
 import org.nd4j.linalg.learning.config.Sgd;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
-import org.nd4j.linalg.schedule.MapSchedule;
-import org.nd4j.linalg.schedule.ScheduleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,39 +146,38 @@ public class Application {
 
     private static MultiLayerConfiguration configLeNet() {
         return new NeuralNetConfiguration.Builder()
-                .seed(1234)
-                .l2(0.0005)
-                .updater(new Nesterovs(new MapSchedule(ScheduleType.ITERATION, new HashMap<>() {{
-                    put(0, 0.06);
-                    put(200, 0.05);
-                    put(600, 0.028);
-                    put(800, 0.0060);
-                    put(1000, 0.001);
-                }})))
-                .weightInit(WeightInit.XAVIER)
+                .updater(new Adam())
+                .weightInit(WeightInit.NORMAL)
                 .list()
-                .layer(0, new ConvolutionLayer.Builder(5, 5)
+                .layer(0, new ConvolutionLayer.Builder()
                         .nIn(INPUT_NUM_CHANNELS)
+                        .kernelSize(5, 5)
                         .stride(1, 1)
                         .nOut(20)
-                        .activation(Activation.IDENTITY)
+                        .activation(Activation.RELU)
                         .build())
-                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
+                .layer(1, new SubsamplingLayer.Builder()
+                        .poolingType(SubsamplingLayer.PoolingType.MAX)
                         .kernelSize(2, 2)
                         .stride(2, 2)
                         .build())
-                .layer(2, new ConvolutionLayer.Builder(5, 5)
-                        .stride(1, 1) // nIn need not specified in later layers
+                .layer(2, new ConvolutionLayer.Builder()
+                        .kernelSize(5, 5)
+                        .stride(1, 1)
                         .nOut(50)
-                        .activation(Activation.IDENTITY)
+                        .activation(Activation.RELU)
                         .build())
-                .layer(3, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
+                .layer(3, new SubsamplingLayer.Builder()
+                        .poolingType(SubsamplingLayer.PoolingType.MAX)
                         .kernelSize(2, 2)
                         .stride(2, 2)
                         .build())
-                .layer(4, new DenseLayer.Builder().activation(Activation.RELU)
-                        .nOut(500).build())
-                .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                .layer(4, new DenseLayer.Builder()
+                        .nOut(500)
+                        .activation(Activation.RELU)
+                        .build())
+                .layer(5, new OutputLayer.Builder()
+                        .lossFunction(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .nOut(NUM_CLASSES)
                         .activation(Activation.SOFTMAX)
                         .build())
