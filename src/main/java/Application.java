@@ -1,4 +1,9 @@
-import org.deeplearning4j.datasets.iterator.impl.MnistDataSetIterator;
+import org.datavec.api.io.labels.ParentPathLabelGenerator;
+import org.datavec.api.split.FileSplit;
+import org.datavec.image.loader.NativeImageLoader;
+import org.datavec.image.recordreader.ImageRecordReader;
+import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
+import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
 import org.deeplearning4j.nn.conf.inputs.InputType;
 import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
@@ -8,8 +13,8 @@ import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
-import org.nd4j.evaluation.classification.Evaluation;
 import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.schedule.MapSchedule;
@@ -17,46 +22,95 @@ import org.nd4j.linalg.schedule.ScheduleType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.util.HashMap;
+import java.util.Random;
 
 public class Application {
     private static final Logger log =
             LoggerFactory.getLogger(Application.class);
 
-    private static final int inWidth = 28;
-    private static final int inHeight = 28;
-    private static final int inDepth = 1;
+    private static final int INPUT_WIDTH = 28;
+    private static final int INPUT_HEIGHT = 28;
+    private static final int INPUT_NUM_CHANNELS = 1;
 
-    private static final int numClasses = 10;
+    private static final int NUM_CLASSES = 10;
 
-    private static final int batchSize = 32;
-    private static final int seed = 123;
-    private static final int numEpochs = 1;
+    private static final int NUM_EPOCHS = 1;
 
     public static void main(String[] args) throws Exception {
-        log.info("Загрузка данных...");
+        if (args.length != 1) {
+            log.error("Datasets path required!");
+        }
 
-        var mnistTrainSet = new MnistDataSetIterator(batchSize, true, 12345);
-        var mnistTestSet = new MnistDataSetIterator(batchSize, false, 12345);
+        final var basePath = args[0];
+        var trIterator = prepareDataset(basePath + "/training");
+        var tsIterator = prepareDataset(basePath + "/testing");
 
-        log.info("Данные загружены");
-        log.info("Построение модели...");
+        var model = prepareModel(configLeNet());
+        log.debug("Number of trained parameters: {}", model.numParams());
 
-        var lrSchedule = new HashMap<Integer, Double>();
-        lrSchedule.put(0, 0.06);
-        lrSchedule.put(200, 0.05);
-        lrSchedule.put(600, 0.028);
-        lrSchedule.put(800, 0.0060);
-        lrSchedule.put(1000, 0.001);
+        for (var i = 0; i < NUM_EPOCHS; i++) {
+            log.info("---------- EPOCH {} ----------", i + 1);
+            log.info("Training...");
 
-        var conf = new NeuralNetConfiguration.Builder()
-                .seed(seed)
+            model.fit(trIterator);
+
+            log.info("Testing...");
+
+            var eval = model.evaluate(tsIterator);
+
+            log.info(eval.stats());
+
+            trIterator.reset();
+            tsIterator.reset();
+        }
+    }
+
+    private static RecordReaderDataSetIterator prepareDataset(final String path) throws Exception {
+        final var batchSize = 64;
+        final var randSeed = 1234;
+
+        var random = new Random(randSeed);
+
+        var data = new File(path);
+        var split = new FileSplit(data, NativeImageLoader.ALLOWED_FORMATS, random);
+
+        var labelMaker = new ParentPathLabelGenerator();
+        var reader = new ImageRecordReader(INPUT_HEIGHT, INPUT_WIDTH, INPUT_NUM_CHANNELS, labelMaker);
+        reader.initialize(split);
+
+        var iterator = new RecordReaderDataSetIterator(reader, batchSize, 1, NUM_CLASSES);
+
+        var scaler = new ImagePreProcessingScaler(0, 1);
+        scaler.fit(iterator);
+        iterator.setPreProcessor(scaler);
+
+        return iterator;
+    }
+
+    private static MultiLayerNetwork prepareModel(MultiLayerConfiguration conf) {
+        var net = new MultiLayerNetwork(conf);
+        net.init();
+        net.setListeners(new ScoreIterationListener(10));
+        return net;
+    }
+
+    private static MultiLayerConfiguration configLeNet() {
+        return new NeuralNetConfiguration.Builder()
+                .seed(1234)
                 .l2(0.0005)
-                .updater(new Nesterovs(new MapSchedule(ScheduleType.ITERATION, lrSchedule)))
+                .updater(new Nesterovs(new MapSchedule(ScheduleType.ITERATION, new HashMap<>() {{
+                    put(0, 0.06);
+                    put(200, 0.05);
+                    put(600, 0.028);
+                    put(800, 0.0060);
+                    put(1000, 0.001);
+                }})))
                 .weightInit(WeightInit.XAVIER)
                 .list()
                 .layer(0, new ConvolutionLayer.Builder(5, 5)
-                        .nIn(inDepth)
+                        .nIn(INPUT_NUM_CHANNELS)
                         .stride(1, 1)
                         .nOut(20)
                         .activation(Activation.IDENTITY)
@@ -77,35 +131,10 @@ public class Application {
                 .layer(4, new DenseLayer.Builder().activation(Activation.RELU)
                         .nOut(500).build())
                 .layer(5, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                        .nOut(numClasses)
+                        .nOut(NUM_CLASSES)
                         .activation(Activation.SOFTMAX)
                         .build())
-                .setInputType(InputType.convolutionalFlat(inHeight, inWidth, inDepth))
+                .setInputType(InputType.convolutionalFlat(INPUT_HEIGHT, INPUT_WIDTH, INPUT_NUM_CHANNELS))
                 .build();
-
-        var net = new MultiLayerNetwork(conf);
-        net.init();
-        net.setListeners(new ScoreIterationListener(10));
-
-        log.info("Модель построена");
-        log.info("Число обучаемых параметров: {}", net.numParams());
-
-        for (var i = 0; i < numEpochs; ++i) {
-            log.info("Обучение. Эпоха {}", i);
-
-            net.fit(mnistTrainSet);
-
-            log.info("Оценка модели...");
-
-            var eval = new Evaluation(numClasses);
-            while (mnistTestSet.hasNext()) {
-                var set = mnistTestSet.next();
-                var output = net.output(set.getFeatures(), false);
-                eval.eval(set.getLabels(), output);
-            }
-            mnistTestSet.reset();
-
-            log.info(eval.stats());
-        }
     }
 }
