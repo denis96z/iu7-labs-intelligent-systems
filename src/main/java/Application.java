@@ -10,12 +10,14 @@ import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
+import org.deeplearning4j.nn.modelimport.keras.preprocessors.ReshapePreprocessor;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 import org.nd4j.linalg.learning.config.Nesterovs;
+import org.nd4j.linalg.learning.config.Sgd;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.nd4j.linalg.schedule.MapSchedule;
 import org.nd4j.linalg.schedule.ScheduleType;
@@ -27,8 +29,7 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class Application {
-    private static final Logger log =
-            LoggerFactory.getLogger(Application.class);
+    private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     private static final int INPUT_WIDTH = 28;
     private static final int INPUT_HEIGHT = 28;
@@ -39,16 +40,46 @@ public class Application {
     private static final int NUM_EPOCHS = 1;
 
     public static void main(String[] args) throws Exception {
-        if (args.length != 1) {
+        if (args.length < 1) {
             log.error("Datasets path required!");
+            return;
         }
 
         final var basePath = args[0];
         var trIterator = prepareDataset(basePath + "/training");
         var tsIterator = prepareDataset(basePath + "/testing");
 
-        var model = prepareModel(configLeNet());
-        log.debug("Number of trained parameters: {}", model.numParams());
+
+        var configArg = "--simple";
+        if (args.length == 2) {
+            configArg = args[1];
+        }
+
+        MultiLayerConfiguration config;
+        switch (configArg) {
+            case "--simple":
+                config = configSimple();
+                config.setInputPreProcessors(new HashMap<>() {{
+                    put(0, new ReshapePreprocessor(new long[]{
+                            INPUT_NUM_CHANNELS,
+                            INPUT_WIDTH, INPUT_HEIGHT
+                    }, new long[]{
+                            INPUT_NUM_CHANNELS * INPUT_WIDTH * INPUT_HEIGHT
+                    }));
+                }});
+                break;
+
+            case "--LeNet":
+                config = configLeNet();
+                break;
+
+            default:
+                log.error("Unknown configuration!");
+                return;
+        }
+
+        var model = prepareModel(config);
+        log.info("Number of trained parameters: {}", model.numParams());
 
         for (var i = 0; i < NUM_EPOCHS; i++) {
             log.info("---------- EPOCH {} ----------", i + 1);
@@ -94,6 +125,25 @@ public class Application {
         net.init();
         net.setListeners(new ScoreIterationListener(10));
         return net;
+    }
+
+    private static MultiLayerConfiguration configSimple() {
+        return new NeuralNetConfiguration.Builder()
+                .seed(1234)
+                .l2(0.01)
+                .updater(new Sgd())
+                .weightInit(WeightInit.SIGMOID_UNIFORM)
+                .list()
+                .layer(0, new DenseLayer.Builder()
+                        .activation(Activation.RELU)
+                        .nOut(256)
+                        .build())
+                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .activation(Activation.SOFTMAX)
+                        .nOut(NUM_CLASSES)
+                        .build())
+                .setInputType(InputType.feedForward(INPUT_HEIGHT * INPUT_WIDTH * INPUT_NUM_CHANNELS))
+                .build();
     }
 
     private static MultiLayerConfiguration configLeNet() {
