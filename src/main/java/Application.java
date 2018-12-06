@@ -10,20 +10,17 @@ import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
-import org.deeplearning4j.nn.modelimport.keras.preprocessors.ReshapePreprocessor;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
 import org.nd4j.linalg.learning.config.Adam;
-import org.nd4j.linalg.learning.config.Sgd;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.HashMap;
 import java.util.Random;
 
 public class Application {
@@ -47,36 +44,9 @@ public class Application {
         var trIterator = prepareDataset(basePath + "/training");
         var tsIterator = prepareDataset(basePath + "/testing");
 
-
-        var configArg = "--simple";
-        if (args.length == 2) {
-            configArg = args[1];
-        }
-
-        MultiLayerConfiguration config;
-        switch (configArg) {
-            case "--simple":
-                config = configSimple();
-                config.setInputPreProcessors(new HashMap<>() {{
-                    put(0, new ReshapePreprocessor(new long[]{
-                            INPUT_NUM_CHANNELS,
-                            INPUT_WIDTH, INPUT_HEIGHT
-                    }, new long[]{
-                            INPUT_NUM_CHANNELS * INPUT_WIDTH * INPUT_HEIGHT
-                    }));
-                }});
-                break;
-
-            case "--LeNet":
-                config = configLeNet();
-                break;
-
-            default:
-                log.error("Unknown configuration!");
-                return;
-        }
-
+        var config = configLeNet();
         var model = prepareModel(config);
+
         log.info("Number of trained parameters: {}", model.numParams());
 
         for (var i = 0; i < NUM_EPOCHS; i++) {
@@ -93,6 +63,8 @@ public class Application {
 
             trIterator.reset();
             tsIterator.reset();
+
+            log.info("---------- EPOCH COMPLETE ----------");
         }
     }
 
@@ -123,25 +95,6 @@ public class Application {
         net.init();
         net.setListeners(new ScoreIterationListener(10));
         return net;
-    }
-
-    private static MultiLayerConfiguration configSimple() {
-        return new NeuralNetConfiguration.Builder()
-                .seed(1234)
-                .l2(0.01)
-                .updater(new Sgd())
-                .weightInit(WeightInit.SIGMOID_UNIFORM)
-                .list()
-                .layer(0, new DenseLayer.Builder()
-                        .activation(Activation.RELU)
-                        .nOut(256)
-                        .build())
-                .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
-                        .activation(Activation.SOFTMAX)
-                        .nOut(NUM_CLASSES)
-                        .build())
-                .setInputType(InputType.feedForward(INPUT_HEIGHT * INPUT_WIDTH * INPUT_NUM_CHANNELS))
-                .build();
     }
 
     private static MultiLayerConfiguration configLeNet() {
