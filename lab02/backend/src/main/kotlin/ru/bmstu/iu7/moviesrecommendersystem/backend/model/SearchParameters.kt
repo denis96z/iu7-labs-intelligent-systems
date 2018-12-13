@@ -5,7 +5,7 @@ import lombok.Data
 import ru.bmstu.iu7.moviesrecommendersystem.backend.constant.JsonPropertyValue
 
 @Data
-data class SearchParameters (
+data class SearchParameters(
         @JsonProperty(value = JsonPropertyValue.YEAR)
         val year: Int? = null,
 

@@ -17,10 +17,10 @@ class MovieServiceImpl(
         return this.convert(movie)
     }
 
-    private fun convert(newMovie: NewMovie) : Movie {
+    private fun convert(newMovie: NewMovie): Movie {
         return Movie(
                 title = newMovie.title,
-                year = newMovie.year
+                year = newMovie.year,
         )
     }
 

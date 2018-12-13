@@ -3,11 +3,11 @@ buildscript {
         kotlinVersion = "1.3.11"
         springBootVersion = "2.1.1.RELEASE"
     }
-    
+
     repositories {
         mavenCentral()
     }
-    
+
     dependencies {
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}" as Object)
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}" as Object)

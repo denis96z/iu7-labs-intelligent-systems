@@ -1,7 +1,7 @@
 package ru.bmstu.iu7.moviesrecommendersystem.backend.constant
 
 class JsonPropertyValue {
-    companion object{
+    companion object {
         const val ID: String = "id"
         const val TITLE: String = "title"
         const val YEAR: String = "year"
