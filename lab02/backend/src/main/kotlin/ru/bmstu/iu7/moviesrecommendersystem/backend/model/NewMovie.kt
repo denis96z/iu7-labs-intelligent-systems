@@ -2,12 +2,19 @@ package ru.bmstu.iu7.moviesrecommendersystem.backend.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import lombok.Data
+import ru.bmstu.iu7.moviesrecommendersystem.backend.constant.JsonPropertyName
 
 @Data
 data class NewMovie(
-        @JsonProperty(value = "title", required = true)
-        val title: String,
+        @JsonProperty(value = JsonPropertyName.TITLE, required = true)
+        var title: String,
 
-        @JsonProperty(value = "year", required = true)
-        val year: Int
+        @JsonProperty(value = JsonPropertyName.YEAR, required = true)
+        var year: Int,
+
+        @JsonProperty(value = JsonPropertyName.TITLE, required = true)
+        var country: String,
+
+        @JsonProperty(value = JsonPropertyName.GENRE, required = true)
+        var genre: String
 )

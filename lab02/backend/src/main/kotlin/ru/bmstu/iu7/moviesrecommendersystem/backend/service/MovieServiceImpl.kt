@@ -21,13 +21,18 @@ class MovieServiceImpl(
         return Movie(
                 title = newMovie.title,
                 year = newMovie.year,
+                country = newMovie.country,
+                genre = newMovie.genre
         )
     }
 
     private fun convert(movie: Movie): ExistingMovie {
         return ExistingMovie(
                 id = movie.id!!,
-                title = movie.title
+                title = movie.title,
+                year = movie.year,
+                country = movie.country,
+                genre = movie.genre
         )
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBui
 import ru.bmstu.iu7.moviesrecommendersystem.backend.model.ExistingMovie
 import ru.bmstu.iu7.moviesrecommendersystem.backend.model.NewMovie
 import ru.bmstu.iu7.moviesrecommendersystem.backend.model.SearchParameters
+import ru.bmstu.iu7.moviesrecommendersystem.backend.model.SearchResultItem
 import ru.bmstu.iu7.moviesrecommendersystem.backend.service.MovieService
 import javax.validation.Valid
 
@@ -26,7 +27,7 @@ class MovieController(
     }
 
     @GetMapping
-    fun getMovies(@Valid @RequestBody searchParameters: SearchParameters): ResponseEntity<Iterable<ExistingMovie>> {
+    fun getMovies(@Valid @RequestBody searchParameters: SearchParameters): ResponseEntity<Iterable<SearchResultItem>> {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).build()
     }
 }
