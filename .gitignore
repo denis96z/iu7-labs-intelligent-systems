@@ -2,7 +2,12 @@
 .gradle
 build
 
-### IDE ###
+### IntelliJ IDEA ###
 .idea
-out
+*.iws
 *.iml
+*.ipr
+out
+
+### Local files ###
+*-dev.yml
