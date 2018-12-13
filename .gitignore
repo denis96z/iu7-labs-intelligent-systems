@@ -11,6 +11,7 @@ out
 
 ### Local files ###
 *-dev.yml
+*.dev.ts
 
 # compiled output
 dist
