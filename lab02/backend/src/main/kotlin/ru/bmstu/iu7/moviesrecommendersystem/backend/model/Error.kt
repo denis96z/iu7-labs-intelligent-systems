@@ -5,7 +5,7 @@ import lombok.Data
 import ru.bmstu.iu7.moviesrecommendersystem.backend.constant.JsonPropertyName
 
 @Data
-data class Error (
+data class Error(
         @JsonProperty(value = JsonPropertyName.MESSAGE)
         val message: String
 )

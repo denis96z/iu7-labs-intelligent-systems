@@ -23,7 +23,7 @@ class MovieServiceImpl(
 
     override fun getMovie(movieId: UUID): ExistingMovie {
         val movie = this.movieRepository.findById(movieId)
-                .orElseThrow{ NotFoundException("Movie Not Found") }
+                .orElseThrow { NotFoundException("Movie Not Found") }
         return this.convert(movie)
     }
 
