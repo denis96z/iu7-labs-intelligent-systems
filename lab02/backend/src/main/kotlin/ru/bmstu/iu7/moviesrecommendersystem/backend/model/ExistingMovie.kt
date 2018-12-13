@@ -16,7 +16,7 @@ data class ExistingMovie(
         @JsonProperty(value = JsonPropertyName.YEAR)
         var year: Int,
 
-        @JsonProperty(value = JsonPropertyName.TITLE)
+        @JsonProperty(value = JsonPropertyName.COUNTRY)
         var country: String,
 
         @JsonProperty(value = JsonPropertyName.GENRE)

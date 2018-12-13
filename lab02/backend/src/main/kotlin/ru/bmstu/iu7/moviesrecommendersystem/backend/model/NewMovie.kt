@@ -12,7 +12,7 @@ data class NewMovie(
         @JsonProperty(value = JsonPropertyName.YEAR, required = true)
         var year: Int,
 
-        @JsonProperty(value = JsonPropertyName.TITLE, required = true)
+        @JsonProperty(value = JsonPropertyName.COUNTRY, required = true)
         var country: String,
 
         @JsonProperty(value = JsonPropertyName.GENRE, required = true)
