@@ -10,6 +10,7 @@ import ru.bmstu.iu7.moviesrecommendersystem.backend.model.NewMovie
 import ru.bmstu.iu7.moviesrecommendersystem.backend.model.SearchParameters
 import ru.bmstu.iu7.moviesrecommendersystem.backend.model.SearchResultItem
 import ru.bmstu.iu7.moviesrecommendersystem.backend.service.MovieService
+import java.util.*
 import javax.validation.Valid
 
 @RestController
@@ -24,6 +25,12 @@ class MovieController(
                 .fromController(this.javaClass).path("/{id}")
                 .buildAndExpand(result.id).toUri()
         return ResponseEntity.created(uri).body(result)
+    }
+
+    @GetMapping("/{id}")
+    fun getMovie(@PathVariable("id") movieId: UUID): ResponseEntity<ExistingMovie?> {
+        val result = this.movieService.getMovie(movieId)
+        return ResponseEntity.ok(result)
     }
 
     @GetMapping
