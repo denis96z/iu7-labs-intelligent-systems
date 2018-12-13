@@ -6,7 +6,7 @@ import ru.bmstu.iu7.moviesrecommendersystem.backend.constant.JsonPropertyName
 import java.util.*
 
 @Data
-data class SearchResultItem (
+data class SearchResultItem(
         @JsonProperty(value = JsonPropertyName.MOVIE_ID)
         val movieId: UUID,
 
