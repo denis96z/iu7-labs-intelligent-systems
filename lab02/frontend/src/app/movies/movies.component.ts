@@ -20,8 +20,9 @@ export class MoviesComponent implements OnInit {
   }
 
   getMovies(): void {
-    MovieService.getMovies()
-      .subscribe(movies => this.movies = movies);
+    this.movieService.getMovies()
+      .subscribe(movies => this.movies = movies,
+        error => console.log(error));
   }
 
   onSelect(movie: Movie): void {
