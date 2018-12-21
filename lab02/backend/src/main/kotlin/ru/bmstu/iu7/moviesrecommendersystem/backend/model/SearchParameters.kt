@@ -9,9 +9,9 @@ data class SearchParameters(
         @JsonProperty(value = JsonPropertyName.YEAR)
         val year: Int? = null,
 
-        @JsonProperty(value = JsonPropertyName.COUNTRY)
-        val country: String? = null,
-
         @JsonProperty(value = JsonPropertyName.GENRE)
-        val genre: String? = null
+        val genre: String? = null,
+
+        @JsonProperty(value = JsonPropertyName.RATING)
+        val rating: String? = null
 )

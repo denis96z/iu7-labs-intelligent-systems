@@ -6,6 +6,8 @@ import ru.bmstu.iu7.moviesrecommendersystem.backend.constant.ColumnName
 import ru.bmstu.iu7.moviesrecommendersystem.backend.constant.TableName
 import java.util.*
 import javax.persistence.*
+import javax.validation.constraints.Max
+import javax.validation.constraints.Min
 
 @Data
 @Accessors(chain = true)
@@ -21,11 +23,15 @@ data class Movie(
         var title: String,
 
         @Column(name = ColumnName.YEAR)
+        @Min(value = 1900)
+        @Max(value = 2100)
         var year: Int,
 
-        @Column(name = ColumnName.COUNTRY)
-        var country: String,
-
         @Column(name = ColumnName.GENRE)
-        var genre: String
+        var genre: String,
+
+        @Column(name = ColumnName.RATING)
+        @Min(value = 0)
+        @Max(value = 0)
+        var rating: Int
 )

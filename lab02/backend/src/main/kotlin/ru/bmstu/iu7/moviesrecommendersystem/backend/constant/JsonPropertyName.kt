@@ -10,5 +10,6 @@ class JsonPropertyName {
         const val GENRE: String = "genre"
         const val MATCH_MARK: String = "matchMark"
         const val MESSAGE: String = "message"
+        const val RATING: String = "rating"
     }
 }

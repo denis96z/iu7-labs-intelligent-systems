@@ -7,5 +7,6 @@ class ColumnName {
         const val YEAR: String = "year"
         const val COUNTRY: String = "country"
         const val GENRE: String = "genre"
+        const val RATING: String = "rating"
     }
 }
