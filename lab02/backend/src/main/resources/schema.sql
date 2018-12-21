@@ -1,0 +1,9 @@
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS genre_sim (
+  genre1 TEXT,
+  genre2 TEXT,
+  coeff  FLOAT
+);
+
+-- CREATE OR REPLACE FUNCTION

@@ -35,8 +35,8 @@ class MovieServiceImpl(
         return Movie(
                 title = newMovie.title,
                 year = newMovie.year,
-                country = newMovie.country,
-                genre = newMovie.genre
+                genre = newMovie.genre,
+                rating = newMovie.rating
         )
     }
 
@@ -45,8 +45,8 @@ class MovieServiceImpl(
                 id = movie.id!!,
                 title = movie.title,
                 year = movie.year,
-                country = movie.country,
-                genre = movie.genre
+                genre = movie.genre,
+                rating = movie.rating
         )
     }
 }
